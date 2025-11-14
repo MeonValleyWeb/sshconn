@@ -18,24 +18,48 @@
 
 You can easily install the `sshconn` script using `curl` or `wget` by following the instructions below:
 
+By default the examples below install into `~/.local/bin`, keeping everything in your home directory and avoiding `sudo`/permission issues. Create a different directory if you prefer, just make sure it is on your `PATH`.
+
+```bash
+export INSTALL_DIR="$HOME/.local/bin"
+mkdir -p "$INSTALL_DIR"
+```
+
+If `~/.local/bin` is not already on your `PATH`, add one of the following lines to your shell profile (e.g. `~/.bashrc`, `~/.zshrc`):
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+```
+
 ### Option 1: Install via Curl
 
 ```bash
-# Download the script
-curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -o /usr/local/bin/sshconn
-
-# Make the script executable
-chmod +x /usr/local/bin/sshconn
+curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -o "$INSTALL_DIR/sshconn"
+chmod +x "$INSTALL_DIR/sshconn"
 ```
 
 ### Option 2: Install via Wget
 
 ```bash
-# Download the script
-wget https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -O /usr/local/bin/sshconn
+wget https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -O "$INSTALL_DIR/sshconn"
+chmod +x "$INSTALL_DIR/sshconn"
+```
 
-# Make the script executable
-chmod +x /usr/local/bin/sshconn
+### Why install locally?
+
+- Writing to `~/.local/bin` keeps everything owned by your user, so `curl`/`chmod` never need `sudo` and you avoid "permission denied" errors.
+- Adding `~/.local/bin` to your `PATH` (and re-sourcing your shell profile) ensures the freshly installed `sshconn` command is immediately available in new terminals.
+- Initializing the `~/.connections` file ahead of time avoids the script prompting for elevated privileges when it first tries to write to it.
+
+### Quick start checklist
+
+```bash
+curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -o ~/.local/bin/sshconn
+chmod +x ~/.local/bin/sshconn
+echo 'export PATH=$HOME/.local/bin:$PATH' >> ~/.zshrc  # or ~/.bashrc
+source ~/.zshrc                                        # reload your shell config
+touch ~/.connections                                  # create the storage file
+chmod 600 ~/.connections                              # optional but recommended for privacy
 ```
 
 Once installed, you can start using the script by running:
