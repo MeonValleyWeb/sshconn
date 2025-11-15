@@ -110,6 +110,37 @@ source ~/.zshrc      # For Zsh users
 
 Now, when you type `sshconn` and press `TAB`, it will autocomplete available domains based on the entries in your `~/.connections` file.
 
+## Security Considerations
+
+The `~/.connections` file contains sensitive information including server IP addresses and usernames. To protect this data:
+
+- **File Permissions**: The script will warn you if `~/.connections` has overly permissive permissions. It's recommended to set permissions to 600 (read/write for owner only):
+  ```bash
+  chmod 600 ~/.connections
+  ```
+
+- **Storage Location**: Keep the connections file in your home directory, not in shared or world-readable locations.
+
+- **SSH Keys**: This script does not store passwords. Use SSH key-based authentication for secure, passwordless connections.
+
+- **Shared Systems**: Avoid using this tool on shared systems where other users might access your connection data.
+
+## File Format
+
+The `~/.connections` file uses a simple CSV format:
+```
+domain,username,ip_or_hostname
+```
+
+Example:
+```
+webserver.example.com,john,192.168.1.100
+database.example.com,dbadmin,db.internal.example.com
+dev-server,developer,10.0.0.50
+```
+
+Each line represents one connection entry with comma-separated values for domain identifier, SSH username, and IP address or hostname.
+
 
 ## Changelog
 
@@ -124,7 +155,9 @@ _1.2.1_
 - **Safety**: Added confirmation prompt before deleting connections
 - **Consistency**: Fixed exit codes to properly indicate errors (exit 1) vs success (exit 0)
 - **Edit Enhancement**: Can now edit IP addresses in addition to domain and username
+- **Security**: Added file permission check and warnings for insecure configurations
 - Added CHANGELOG.md for structured change tracking
+- Added Security Considerations and File Format sections to README
 
 _1.2.0_
 

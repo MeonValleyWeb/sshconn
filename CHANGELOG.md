@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation functions to ensure data integrity in connections file
 - Confirmation prompt before deleting connections to prevent accidental removal
 - Ability to edit IP addresses when editing connections
+- Security warning when ~/.connections file has insecure permissions
+- File permissions check on startup (warns if not 600 or 400)
+- Security Considerations section in README
+- File Format documentation in README with examples
 
 ### Changed
 - Replaced macOS-specific `sed -i ''` syntax with OS-detection for portability
@@ -29,6 +33,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - IP addresses can now be edited (previously this field was not editable)
 
 ### Security
+- Added file permission check to warn users about insecure connection file permissions
+- Documentation added for security best practices
 
 ## [1.2.0] - 2024-XX-XX
 

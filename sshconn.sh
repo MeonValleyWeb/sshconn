@@ -246,6 +246,14 @@ if [ ! -f "$connections_file" ]; then
   exit 1
 fi
 
+# Check file permissions for security
+file_perms=$(stat -f "%OLp" "$connections_file" 2>/dev/null || stat -c "%a" "$connections_file" 2>/dev/null)
+if [ "$file_perms" != "600" ] && [ "$file_perms" != "400" ]; then
+  echo "WARNING: ~/.connections has permissions $file_perms (should be 600 for security)"
+  echo "Consider running: chmod 600 ~/.connections"
+  echo ""
+fi
+
 # Check for help or no arguments provided
 if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ -z "$1" ]; then
   show_help
