@@ -129,17 +129,24 @@ The `~/.connections` file contains sensitive information including server IP add
 
 The `~/.connections` file uses a simple CSV format:
 ```
+domain,username,ip_or_hostname,port
+```
+
+The port field is optional and defaults to 22 if not specified. Both formats are supported:
+```
+domain,username,ip_or_hostname,port
 domain,username,ip_or_hostname
 ```
 
 Example:
 ```
-webserver.example.com,john,192.168.1.100
-database.example.com,dbadmin,db.internal.example.com
+webserver.example.com,john,192.168.1.100,22
+database.example.com,dbadmin,db.internal.example.com,3306
 dev-server,developer,10.0.0.50
+ssh-custom-port,admin,example.com,2222
 ```
 
-Each line represents one connection entry with comma-separated values for domain identifier, SSH username, and IP address or hostname.
+Each line represents one connection entry with comma-separated values for domain identifier, SSH username, IP address or hostname, and optionally the SSH port number.
 
 
 ## Changelog
@@ -151,11 +158,12 @@ For a complete changelog, see [CHANGELOG.md](CHANGELOG.md).
 _1.2.1_
 
 - **Portability**: Fixed macOS-specific `sed` commands to work on both macOS and Linux
-- **Validation**: Added input validation for domain names, usernames, and IP addresses
+- **Validation**: Added input validation for domain names, usernames, IP addresses, and ports
 - **Safety**: Added confirmation prompt before deleting connections
 - **Consistency**: Fixed exit codes to properly indicate errors (exit 1) vs success (exit 0)
-- **Edit Enhancement**: Can now edit IP addresses in addition to domain and username
+- **Edit Enhancement**: Can now edit IP addresses and ports in addition to domain and username
 - **Security**: Added file permission check and warnings for insecure configurations
+- **Port Support**: Added support for custom SSH ports (defaults to 22)
 - Added CHANGELOG.md for structured change tracking
 - Added Security Considerations and File Format sections to README
 

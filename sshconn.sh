@@ -17,7 +17,7 @@ show_help() {
 Options:
   --list                 List all connections with numbered options
   --by-server            Group connections by IP address and prompt for selection
-  --add                  Add a new connection entry (domain, user, IP)
+  --add                  Add a new connection entry (domain, user, IP, port)
   --scp                  Use SCP to copy files to a server (domain must be specified)
   -h, --help             Show this help documentation
   [domain]               Enter a domain name directly to connect to it
@@ -25,10 +25,11 @@ Options:
 Operations:
   1. Use --list to display all available connections, sorted by domain name.
   2. Use --by-server to list connections grouped by IP addresses. You can then choose a specific connection to manage.
-  3. Use --add to add a new connection (domain, username, IP) to the ~/.connections file.
+  3. Use --add to add a new connection (domain, username, IP, port) to the ~/.connections file.
   4. Use --scp with a domain to copy files via SCP.
   5. If you enter a domain directly, the script will attempt to connect to that server via SSH.
   6. After selecting a connection, you can choose to connect (y), edit (edit), or delete (del) the connection.
+  7. Port specification is supported; default is 22 if not specified.
 "
 }
 
@@ -36,6 +37,19 @@ Operations:
 list_domains() {
   echo "Available connections:"
   awk -F',' '{print $1}' "$connections_file" | sort | nl -w1 -s". " | column -c $(tput cols)
+}
+
+# Function to validate port number
+validate_port() {
+  local port=$1
+  # Port can be empty (default 22) or a number between 1-65535
+  if [ -z "$port" ]; then
+    return 0
+  fi
+  if [[ "$port" =~ ^[0-9]+$ ]] && [ "$port" -ge 1 ] && [ "$port" -le 65535 ]; then
+    return 0
+  fi
+  return 1
 }
 
 # Function to validate domain name
@@ -85,6 +99,10 @@ add_entry() {
   read -p "Enter domain: " domain
   read -p "Enter username: " username
   read -p "Enter IP address: " ip_address
+  read -p "Enter port (press Enter for default 22): " port
+
+  # Default port to 22 if empty
+  port=${port:-22}
 
   # Validate domain
   if ! validate_domain "$domain"; then
@@ -104,6 +122,12 @@ add_entry() {
     exit 1
   fi
 
+  # Validate port
+  if ! validate_port "$port"; then
+    echo "ERROR: Invalid port number. Must be between 1 and 65535."
+    exit 1
+  fi
+
   if grep -q "^$domain," "$connections_file"; then
     echo "ERROR: Domain $domain already exists."
     exit 1
@@ -114,18 +138,18 @@ add_entry() {
     echo "" >> "$connections_file"
   fi
 
-  echo "$domain,$username,$ip_address" >> "$connections_file"
-  echo "New entry added: $domain,$username,$ip_address"
+  echo "$domain,$username,$ip_address,$port" >> "$connections_file"
+  echo "New entry added: $domain,$username,$ip_address,$port"
 }
 
 # Function to list connections grouped by IP address, sorted alphabetically within each IP group
 list_by_server() {
   echo "Connections grouped by IP:"
-  awk -F',' '{ print $3,$1,$2 }' "$connections_file" | sort -t' ' -k1,1 -k2,2 | nl -w1 -s". " | column -t
+  awk -F',' '{ printf "%s %s %s %s\n", $3, $1, $2, ($4 ? $4 : "22") }' "$connections_file" | sort -t' ' -k1,1 -k2,2 | nl -w1 -s". " | column -t
 
   read -p "Select a number to proceed: " selection_number
 
-  selected_line=$(awk -F',' '{ print $3,$1,$2 }' "$connections_file" | sort -t' ' -k1,1 -k2,2 | nl -w1 -s". " | awk "NR==$selection_number")
+  selected_line=$(awk -F',' '{ printf "%s %s %s %s\n", $3, $1, $2, ($4 ? $4 : "22") }' "$connections_file" | sort -t' ' -k1,1 -k2,2 | nl -w1 -s". " | awk "NR==$selection_number")
 
   if [ -z "$selected_line" ]; then
     echo "ERROR: Invalid selection."
@@ -135,22 +159,25 @@ list_by_server() {
   ip_address=$(echo "$selected_line" | awk '{print $2}')
   domain=$(echo "$selected_line" | awk '{print $3}')
   username=$(echo "$selected_line" | awk '{print $4}')
+  port=$(echo "$selected_line" | awk '{print $5}')
 
   read -p "You've selected $domain. Would you like to connect (y), edit (edit), or delete (del)? [y/edit/del] " action
 
   case "$action" in
     y)
-      ssh "$username@$ip_address"
+      ssh -p "$port" "$username@$ip_address"
       ;;
     edit)
       echo "Editing $domain:"
       read -p "Enter new domain (or press Enter to keep \"$domain\"): " new_domain
       read -p "Enter new username (or press Enter to keep \"$username\"): " new_username
       read -p "Enter new IP address (or press Enter to keep \"$ip_address\"): " new_ip
+      read -p "Enter new port (or press Enter to keep \"$port\"): " new_port
 
       new_domain=${new_domain:-$domain}
       new_username=${new_username:-$username}
       new_ip=${new_ip:-$ip_address}
+      new_port=${new_port:-$port}
 
       # Validate new values if they were changed
       if [ "$new_domain" != "$domain" ]; then
@@ -174,11 +201,18 @@ list_by_server() {
         fi
       fi
 
+      if [ "$new_port" != "$port" ]; then
+        if ! validate_port "$new_port"; then
+          echo "ERROR: Invalid port number."
+          exit 1
+        fi
+      fi
+
       # Use portable sed syntax
       if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s|^$domain,$username,$ip_address|$new_domain,$new_username,$new_ip|" "$connections_file"
+        sed -i '' "s|^$domain,$username,$ip_address,$port|$new_domain,$new_username,$new_ip,$new_port|" "$connections_file"
       else
-        sed -i "s|^$domain,$username,$ip_address|$new_domain,$new_username,$new_ip|" "$connections_file"
+        sed -i "s|^$domain,$username,$ip_address,$port|$new_domain,$new_username,$new_ip,$new_port|" "$connections_file"
       fi
       echo "Entry updated."
       ;;
@@ -191,9 +225,9 @@ list_by_server() {
       echo "Deleting $domain..."
       # Use portable sed syntax
       if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "/^$domain,$username,$ip_address/d" "$connections_file"
+        sed -i '' "/^$domain,$username,$ip_address,$port/d" "$connections_file"
       else
-        sed -i "/^$domain,$username,$ip_address/d" "$connections_file"
+        sed -i "/^$domain,$username,$ip_address,$port/d" "$connections_file"
       fi
       echo "$domain has been deleted."
       ;;
@@ -224,6 +258,8 @@ scp_file() {
   else
     user=$(echo "$matches" | cut -d',' -f2)
     ip_address=$(echo "$matches" | cut -d',' -f3)
+    port=$(echo "$matches" | cut -d',' -f4)
+    port=${port:-22}  # Default to 22 if not specified
   fi
 
   # Prompt for file to copy with autocompletion
@@ -237,7 +273,7 @@ scp_file() {
   read -p "Destination path on $domain_input: " destination_path
 
   # Execute the SCP command
-  scp "$file_to_copy" "$user@$ip_address:$destination_path"
+  scp -P "$port" "$file_to_copy" "$user@$ip_address:$destination_path"
 }
 
 # Check if the connections file exists
@@ -323,7 +359,9 @@ if [ "$match_count" -gt 1 ]; then
 else
   user=$(echo "$matches" | cut -d',' -f2)
   ip_address=$(echo "$matches" | cut -d',' -f3)
+  port=$(echo "$matches" | cut -d',' -f4)
+  port=${port:-22}  # Default to 22 if not specified
 
   # Directly execute the SSH command
-  ssh "$user@$ip_address"
+  ssh -p "$port" "$user@$ip_address"
 fi

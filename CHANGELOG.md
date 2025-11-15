@@ -18,14 +18,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File permissions check on startup (warns if not 600 or 400)
 - Security Considerations section in README
 - File Format documentation in README with examples
+- Port specification support for non-standard SSH ports
+- Port validation (1-65535) with default to 22
+- Port field in add, edit, and connection operations
 
 ### Changed
 - Replaced macOS-specific `sed -i ''` syntax with OS-detection for portability
 - Edit and delete operations now work on both macOS and Linux systems
 - `--add` command now validates input before adding to connections file
 - Exit codes are now consistent: 0 for success, 1 for errors
-- Edit function now supports modifying all three fields: domain, username, and IP address
+- Edit function now supports modifying all four fields: domain, username, IP address, and port
 - Edit function validates all changed fields before saving
+- SSH and SCP commands now use specified port (defaults to 22 if not specified)
+- File format now supports optional fourth field for port number
+- Help documentation updated to include port specification information
 
 ### Fixed
 - Prevented invalid domain names, usernames, and IP addresses from being added
