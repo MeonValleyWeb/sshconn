@@ -120,6 +120,7 @@ For a complete changelog, see [CHANGELOG.md](CHANGELOG.md).
 _1.2.1_
 
 - **Portability**: Fixed macOS-specific `sed` commands to work on both macOS and Linux
+- **Validation**: Added input validation for domain names, usernames, and IP addresses
 - Added CHANGELOG.md for structured change tracking
 
 _1.2.0_

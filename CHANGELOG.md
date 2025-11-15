@@ -10,12 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - CHANGELOG.md to track all project changes
 - Cross-platform support for Linux and macOS
+- Input validation for domain names, usernames, and IP addresses when adding entries
+- Validation functions to ensure data integrity in connections file
 
 ### Changed
 - Replaced macOS-specific `sed -i ''` syntax with OS-detection for portability
 - Edit and delete operations now work on both macOS and Linux systems
+- `--add` command now validates input before adding to connections file
 
 ### Fixed
+- Prevented invalid domain names, usernames, and IP addresses from being added
 
 ### Security
 

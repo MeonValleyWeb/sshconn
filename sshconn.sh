@@ -38,11 +38,71 @@ list_domains() {
   awk -F',' '{print $1}' "$connections_file" | sort | nl -w1 -s". " | column -c $(tput cols)
 }
 
+# Function to validate domain name
+validate_domain() {
+  local domain=$1
+  # Allow alphanumeric, dots, hyphens
+  if [[ ! "$domain" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+    return 1
+  fi
+  return 0
+}
+
+# Function to validate username
+validate_username() {
+  local username=$1
+  # Allow alphanumeric, underscore, hyphen, dot (common SSH username chars)
+  if [[ -z "$username" ]] || [[ ! "$username" =~ ^[a-zA-Z0-9._-]+$ ]]; then
+    return 1
+  fi
+  return 0
+}
+
+# Function to validate IP address or hostname
+validate_ip_or_hostname() {
+  local ip=$1
+  # Check if it's a valid IPv4 address
+  if [[ "$ip" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+    # Validate each octet is 0-255
+    local IFS='.'
+    local -a octets=($ip)
+    for octet in "${octets[@]}"; do
+      if ((octet > 255)); then
+        return 1
+      fi
+    done
+    return 0
+  fi
+  # Or check if it's a valid hostname/FQDN
+  if [[ "$ip" =~ ^[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+    return 0
+  fi
+  return 1
+}
+
 # Function to add a new entry to the connections file
 add_entry() {
   read -p "Enter domain: " domain
   read -p "Enter username: " username
   read -p "Enter IP address: " ip_address
+
+  # Validate domain
+  if ! validate_domain "$domain"; then
+    echo "ERROR: Invalid domain name format."
+    exit 1
+  fi
+
+  # Validate username
+  if ! validate_username "$username"; then
+    echo "ERROR: Invalid username format. Use only alphanumeric characters, dots, hyphens, and underscores."
+    exit 1
+  fi
+
+  # Validate IP address or hostname
+  if ! validate_ip_or_hostname "$ip_address"; then
+    echo "ERROR: Invalid IP address or hostname format."
+    exit 1
+  fi
 
   if grep -q "^$domain," "$connections_file"; then
     echo "ERROR: Domain $domain already exists."
