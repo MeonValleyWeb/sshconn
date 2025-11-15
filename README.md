@@ -123,6 +123,7 @@ _1.2.1_
 - **Validation**: Added input validation for domain names, usernames, and IP addresses
 - **Safety**: Added confirmation prompt before deleting connections
 - **Consistency**: Fixed exit codes to properly indicate errors (exit 1) vs success (exit 0)
+- **Edit Enhancement**: Can now edit IP addresses in addition to domain and username
 - Added CHANGELOG.md for structured change tracking
 
 _1.2.0_

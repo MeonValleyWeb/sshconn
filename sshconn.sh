@@ -146,15 +146,39 @@ list_by_server() {
       echo "Editing $domain:"
       read -p "Enter new domain (or press Enter to keep \"$domain\"): " new_domain
       read -p "Enter new username (or press Enter to keep \"$username\"): " new_username
+      read -p "Enter new IP address (or press Enter to keep \"$ip_address\"): " new_ip
 
       new_domain=${new_domain:-$domain}
       new_username=${new_username:-$username}
+      new_ip=${new_ip:-$ip_address}
+
+      # Validate new values if they were changed
+      if [ "$new_domain" != "$domain" ]; then
+        if ! validate_domain "$new_domain"; then
+          echo "ERROR: Invalid domain name format."
+          exit 1
+        fi
+      fi
+
+      if [ "$new_username" != "$username" ]; then
+        if ! validate_username "$new_username"; then
+          echo "ERROR: Invalid username format."
+          exit 1
+        fi
+      fi
+
+      if [ "$new_ip" != "$ip_address" ]; then
+        if ! validate_ip_or_hostname "$new_ip"; then
+          echo "ERROR: Invalid IP address or hostname format."
+          exit 1
+        fi
+      fi
 
       # Use portable sed syntax
       if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s|^$domain,$username,$ip_address|$new_domain,$new_username,$ip_address|" "$connections_file"
+        sed -i '' "s|^$domain,$username,$ip_address|$new_domain,$new_username,$new_ip|" "$connections_file"
       else
-        sed -i "s|^$domain,$username,$ip_address|$new_domain,$new_username,$ip_address|" "$connections_file"
+        sed -i "s|^$domain,$username,$ip_address|$new_domain,$new_username,$new_ip|" "$connections_file"
       fi
       echo "Entry updated."
       ;;

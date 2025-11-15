@@ -13,16 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Input validation for domain names, usernames, and IP addresses when adding entries
 - Validation functions to ensure data integrity in connections file
 - Confirmation prompt before deleting connections to prevent accidental removal
+- Ability to edit IP addresses when editing connections
 
 ### Changed
 - Replaced macOS-specific `sed -i ''` syntax with OS-detection for portability
 - Edit and delete operations now work on both macOS and Linux systems
 - `--add` command now validates input before adding to connections file
 - Exit codes are now consistent: 0 for success, 1 for errors
+- Edit function now supports modifying all three fields: domain, username, and IP address
+- Edit function validates all changed fields before saving
 
 ### Fixed
 - Prevented invalid domain names, usernames, and IP addresses from being added
 - Inconsistent exit codes when connections are not found now properly return 1
+- IP addresses can now be edited (previously this field was not editable)
 
 ### Security
 
