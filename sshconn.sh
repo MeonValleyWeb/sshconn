@@ -159,6 +159,11 @@ list_by_server() {
       echo "Entry updated."
       ;;
     del)
+      read -p "Are you sure you want to delete $domain? (y/N): " confirm
+      if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
+        echo "Deletion cancelled."
+        exit 0
+      fi
       echo "Deleting $domain..."
       # Use portable sed syntax
       if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -182,12 +187,14 @@ scp_file() {
   # Fetch the matching entry
   matches=$(grep "^$domain_input," "$connections_file")
 
-  match_count=$(echo "$matches" | wc -l)
-
-  if [ "$match_count" -eq 0 ]; then
+  if [ -z "$matches" ]; then
     echo "No connection found for $domain_input."
-    exit 0
-  elif [ "$match_count" -gt 1 ]; then
+    exit 1
+  fi
+
+  match_count=$(echo "$matches" | wc -l | tr -d ' ')
+
+  if [ "$match_count" -gt 1 ]; then
     echo "ERROR: Multiple entries for $domain_input. Please edit your ~/.connections file to have only one line for this domain."
     exit 1
   else
@@ -271,12 +278,14 @@ fi
 
 matches=$(grep "^$domain_input," "$connections_file")
 
-match_count=$(echo "$matches" | wc -l)
-
-if [ "$match_count" -eq 0 ]; then
+if [ -z "$matches" ]; then
   echo "No connection found for $domain_input."
-  exit 0
-elif [ "$match_count" -gt 1 ]; then
+  exit 1
+fi
+
+match_count=$(echo "$matches" | wc -l | tr -d ' ')
+
+if [ "$match_count" -gt 1 ]; then
   echo "ERROR: Multiple entries for $domain_input. Please edit your ~/.connections file to have only one line for this domain."
   exit 1
 else

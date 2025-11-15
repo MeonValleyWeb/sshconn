@@ -121,6 +121,8 @@ _1.2.1_
 
 - **Portability**: Fixed macOS-specific `sed` commands to work on both macOS and Linux
 - **Validation**: Added input validation for domain names, usernames, and IP addresses
+- **Safety**: Added confirmation prompt before deleting connections
+- **Consistency**: Fixed exit codes to properly indicate errors (exit 1) vs success (exit 0)
 - Added CHANGELOG.md for structured change tracking
 
 _1.2.0_
