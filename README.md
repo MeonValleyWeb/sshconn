@@ -113,6 +113,15 @@ Now, when you type `sshconn` and press `TAB`, it will autocomplete available dom
 
 ## Changelog
 
+For a complete changelog, see [CHANGELOG.md](CHANGELOG.md).
+
+### Recent Changes
+
+_1.2.1_
+
+- **Portability**: Fixed macOS-specific `sed` commands to work on both macOS and Linux
+- Added CHANGELOG.md for structured change tracking
+
 _1.2.0_
 
 - Added SCP functionality via the --scp option, allowing secure file transfers.

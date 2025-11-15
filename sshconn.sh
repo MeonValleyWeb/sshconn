@@ -3,6 +3,13 @@
 # Define the connections file path
 connections_file="$HOME/.connections"
 
+# Detect OS for sed compatibility
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  SED_INPLACE="sed -i ''"
+else
+  SED_INPLACE="sed -i"
+fi
+
 # Function to show help documentation
 show_help() {
   echo "Usage: sshconn [options]
@@ -83,12 +90,22 @@ list_by_server() {
       new_domain=${new_domain:-$domain}
       new_username=${new_username:-$username}
 
-      sed -i '' "s|^$domain,$username,$ip_address|$new_domain,$new_username,$ip_address|" "$connections_file"
+      # Use portable sed syntax
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|^$domain,$username,$ip_address|$new_domain,$new_username,$ip_address|" "$connections_file"
+      else
+        sed -i "s|^$domain,$username,$ip_address|$new_domain,$new_username,$ip_address|" "$connections_file"
+      fi
       echo "Entry updated."
       ;;
     del)
       echo "Deleting $domain..."
-      sed -i '' "/^$domain,$username,$ip_address/d" "$connections_file"
+      # Use portable sed syntax
+      if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "/^$domain,$username,$ip_address/d" "$connections_file"
+      else
+        sed -i "/^$domain,$username,$ip_address/d" "$connections_file"
+      fi
       echo "$domain has been deleted."
       ;;
     *)

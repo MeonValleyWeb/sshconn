@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - CHANGELOG.md to track all project changes
+- Cross-platform support for Linux and macOS
 
 ### Changed
+- Replaced macOS-specific `sed -i ''` syntax with OS-detection for portability
+- Edit and delete operations now work on both macOS and Linux systems
 
 ### Fixed
 
