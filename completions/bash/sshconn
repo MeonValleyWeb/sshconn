@@ -1,0 +1,23 @@
+# Bash completion for sshconn
+# Install:
+#   source /path/to/sshconn
+# Or copy to:
+#   /usr/local/etc/bash_completion.d/sshconn
+
+_sshconn_completions() {
+  local cur_word
+  cur_word="${COMP_WORDS[COMP_CWORD]}"
+
+  local connections_file="$HOME/.connections"
+  [[ -f "$connections_file" ]] || return 0
+
+  # If completing an option, let bash handle it normally.
+  # (We keep this simple; domains are the main completion target.)
+  local domains
+  domains="$(awk -F',' '{print $1}' "$connections_file" 2>/dev/null)"
+
+  COMPREPLY=($(compgen -W "${domains}" -- "${cur_word}"))
+  return 0
+}
+
+complete -F _sshconn_completions sshconn
