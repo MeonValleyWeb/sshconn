@@ -209,11 +209,8 @@ list_by_server() {
       fi
 
       # Use portable sed syntax
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "s|^$domain,$username,$ip_address,$port|$new_domain,$new_username,$new_ip,$new_port|" "$connections_file"
-      else
-        sed -i "s|^$domain,$username,$ip_address,$port|$new_domain,$new_username,$new_ip,$new_port|" "$connections_file"
-      fi
+      $SED_INPLACE "s|^$domain,$username,$ip_address,$port|$new_domain,$new_username,$new_ip,$new_port|" "$connections_file"
+
       echo "Entry updated."
       ;;
     del)
@@ -224,11 +221,8 @@ list_by_server() {
       fi
       echo "Deleting $domain..."
       # Use portable sed syntax
-      if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' "/^$domain,$username,$ip_address,$port/d" "$connections_file"
-      else
-        sed -i "/^$domain,$username,$ip_address,$port/d" "$connections_file"
-      fi
+      $SED_INPLACE "/^$domain,$username,$ip_address,$port/d" "$connections_file"
+
       echo "$domain has been deleted."
       ;;
     *)
