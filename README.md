@@ -2,143 +2,194 @@
 
 # SSHConn ![GitHub release (latest by date)](https://img.shields.io/github/v/release/mwender/sshconn)
 
-`SSHConn` is a Bash script that simplifies the management of SSH connections. It allows you to store, list, and manage SSH connections based on domain, username, and IP address. You can also group connections by server, add new connections, and perform SSH connections directly by specifying a domain.
+`SSHConn` is a lightweight command-line tool that simplifies the management of SSH connections. It allows you to store, list, group, and manage SSH connections by domain, username, IP/hostname, and port—then connect with a single command.
+
+Although `sshconn` is implemented as a Bash script, it works seamlessly when launched from **Bash or Zsh**. Shell-native autocompletion is supported for both environments.
+
+---
 
 ## Features
 
-- **List Connections**: Display a numbered list of stored SSH connections.
-- **Group by Server**: View connections grouped by their IP address.
-- **Add New Connections**: Easily add new SSH connection entries.
-- **Connect Automatically**: Run `sshconn [domain]` to automatically SSH into a server.
-- **Secure Copy (SCP) Files**: Use the `--scp` option to securely copy files to a server.
-- **Edit or Delete**: Edit or delete existing connections.
-- **Help Menu**: A built-in help menu to display usage instructions.
+* **List Connections** – Display a numbered list of stored SSH connections
+* **Group by Server** – View connections grouped by IP address / host
+* **Add New Connections** – Interactively add SSH connection entries
+* **One-Command SSH** – Run `sshconn [domain]` to connect immediately
+* **SCP Support** – Securely copy files using `--scp`
+* **Edit or Delete Entries** – Manage connections interactively
+* **Built-in Help** – Usage and options available via `-h` / `--help`
+* **Shell Autocompletion** – Domain autocompletion for Bash and Zsh
+
+---
 
 ## Installation
 
-You can easily install the `sshconn` script using `curl` or `wget` by following the instructions below:
+You can install `sshconn` directly using `curl` or `wget`.
 
 ### Option 1: Install via Curl
 
 ```bash
-# Download the script
 curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -o /usr/local/bin/sshconn
-
-# Make the script executable
 chmod +x /usr/local/bin/sshconn
 ```
 
 ### Option 2: Install via Wget
 
 ```bash
-# Download the script
 wget https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -O /usr/local/bin/sshconn
-
-# Make the script executable
 chmod +x /usr/local/bin/sshconn
 ```
 
-Once installed, you can start using the script by running:
+Verify installation:
 
 ```bash
-sshconn -h
+sshconn --help
 ```
 
-This will display the help menu with available options.
+---
 
 ## Usage
 
-- **List all connections**:
+* **List all connections**
+
   ```bash
   sshconn --list
   ```
 
-- **Group connections by IP**:
+* **Group connections by IP / server**
+
   ```bash
   sshconn --by-server
   ```
 
-- **Add a new connection**:
+* **Add a new connection**
+
   ```bash
   sshconn --add
   ```
 
-- **Connect to a domain**:
+* **Connect to a domain**
+
   ```bash
-  sshconn [domain]
+  sshconn myserver.example.com
   ```
 
-- **Securely copy files using SCP**:
+* **Copy files via SCP**
+
   ```bash
-  sshconn [domain] --scp
+  sshconn myserver.example.com --scp
   ```
 
-## Enabling Autocompletion for `sshconn`
+---
 
-To enable autocompletion for the `sshconn` command, follow these steps:
+## Shell Compatibility
 
-### 1. Download the Autocompletion Script
+### Bash vs Zsh
 
-Download the autocompletion script to your local machine:
+* `sshconn` runs under **Bash** (via its shebang) and works correctly when invoked from **either Bash or Zsh**
+* No separate “zsh version” of the script is required
+* Shell-specific behavior is handled via **separate completion files**, not separate executables
 
-```bash
-curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn-completion.sh -o ~/.sshconn-completion.sh
-```
+This keeps the core logic consistent and easy to maintain.
 
-### 2. Add the Following Line to Your Shell Configuration
+---
 
-For **Bash** users, add this line to your `~/.bashrc` (or `~/.bash_profile` if you're using macOS) to enable autocompletion every time you open a new terminal:
+## Enabling Autocompletion
 
-```bash
-source ~/.sshconn-completion.sh
-```
+Autocompletion is optional but highly recommended. Setup differs slightly between Bash and Zsh.
 
-For **Zsh** users, add this to your `~/.zshrc`:
+---
 
-```bash
-source ~/.sshconn-completion.sh
-```
+### Bash Autocompletion
 
-### 3. Apply the Changes
-
-After making the changes, apply them by running:
+#### Install the completion script
 
 ```bash
-source ~/.bashrc     # For Bash users
-source ~/.zshrc      # For Zsh users
+curl -L https://raw.githubusercontent.com/mwender/sshconn/main/completions/bash/sshconn -o ~/.sshconn-completion.bash
 ```
 
-Now, when you type `sshconn` and press `TAB`, it will autocomplete available domains based on the entries in your `~/.connections` file.
+#### Enable it
+
+Add the following to your `~/.bashrc` or `~/.bash_profile` (macOS):
+
+```bash
+source ~/.sshconn-completion.bash
+```
+
+Reload your shell:
+
+```bash
+source ~/.bashrc
+```
+
+---
+
+### Zsh Autocompletion
+
+Zsh uses its own native completion system and requires a different setup.
+
+#### 1. Create a completions directory (if needed)
+
+```bash
+mkdir -p ~/.zsh/completions
+```
+
+#### 2. Download the Zsh completion file
+
+```bash
+curl -L https://raw.githubusercontent.com/mwender/sshconn/main/completions/zsh/_sshconn -o ~/.zsh/completions/_sshconn
+```
+
+#### 3. Enable completions in `~/.zshrc`
+
+Ensure the following lines exist in your `~/.zshrc`:
+
+```zsh
+fpath=(~/.zsh/completions $fpath)
+autoload -Uz compinit
+compinit
+```
+
+Reload your shell:
+
+```bash
+source ~/.zshrc
+```
+
+Once enabled, typing `sshconn` followed by `TAB` will autocomplete domains from your `~/.connections` file.
+
+---
 
 ## Security Considerations
 
-The `~/.connections` file contains sensitive information including server IP addresses and usernames. To protect this data:
+The `~/.connections` file contains sensitive metadata about your servers.
 
-- **File Permissions**: The script will warn you if `~/.connections` has overly permissive permissions. It's recommended to set permissions to 600 (read/write for owner only):
+* **Permissions** – Recommended permissions are `600`:
+
   ```bash
   chmod 600 ~/.connections
   ```
 
-- **Storage Location**: Keep the connections file in your home directory, not in shared or world-readable locations.
+* **No Password Storage** – Passwords are never stored; use SSH keys
 
-- **SSH Keys**: This script does not store passwords. Use SSH key-based authentication for secure, passwordless connections.
+* **Shared Systems** – Avoid use on shared machines
 
-- **Shared Systems**: Avoid using this tool on shared systems where other users might access your connection data.
+* **Warnings** – `sshconn` will warn if permissions are too permissive
 
-## File Format
+---
 
-The `~/.connections` file uses a simple CSV format:
+## Connections File Format
+
+`sshconn` reads from a simple CSV file at `~/.connections`.
+
 ```
 domain,username,ip_or_hostname,port
 ```
 
-The port field is optional and defaults to 22 if not specified. Both formats are supported:
-```
-domain,username,ip_or_hostname,port
-domain,username,ip_or_hostname
-```
+* The `port` field is optional (defaults to `22`)
+* Hostnames and IP addresses are both supported
 
-Example:
+Valid examples:
+
 ```
 webserver.example.com,john,192.168.1.100,22
 database.example.com,dbadmin,db.internal.example.com,3306
@@ -146,59 +197,46 @@ dev-server,developer,10.0.0.50
 ssh-custom-port,admin,example.com,2222
 ```
 
-Each line represents one connection entry with comma-separated values for domain identifier, SSH username, IP address or hostname, and optionally the SSH port number.
+Each line represents a single SSH connection profile.
 
+---
 
 ## Changelog
 
-For a complete changelog, see [CHANGELOG.md](CHANGELOG.md).
+For the full changelog, see [CHANGELOG.md](CHANGELOG.md).
 
 ### Recent Changes
 
-_1.2.1_
+**1.2.1**
 
-- **Portability**: Fixed macOS-specific `sed` commands to work on both macOS and Linux
-- **Validation**: Added input validation for domain names, usernames, IP addresses, and ports
-- **Safety**: Added confirmation prompt before deleting connections
-- **Consistency**: Fixed exit codes to properly indicate errors (exit 1) vs success (exit 0)
-- **Edit Enhancement**: Can now edit IP addresses and ports in addition to domain and username
-- **Security**: Added file permission check and warnings for insecure configurations
-- **Port Support**: Added support for custom SSH ports (defaults to 22)
-- Added CHANGELOG.md for structured change tracking
-- Added Security Considerations and File Format sections to README
+* Portability fixes for macOS/Linux `sed`
+* Improved input validation
+* Safer delete confirmations
+* Editable IPs and ports
+* File permission checks and warnings
+* Custom SSH port support
+* Added structured changelog and expanded documentation
 
-_1.2.0_
+**1.2.0**
 
-- Added SCP functionality via the --scp option, allowing secure file transfers.
-- Added autocompletion for file paths when using SCP.
+* Added SCP support via `--scp`
+* File path autocompletion for SCP
 
-_1.1.3_
+**1.1.x**
 
-- BUGFIX: Ensuring `--add` option adds new entries on a new line inside `~/.connections`.
+* Autocompletion support
+* Stability and formatting fixes
+* Repo metadata improvements
 
-_1.1.2_
-
-- Adding "Behind the Code" section to README.
-
-_1.1.1_
-
-- Adding repo thumbnail.
-
-_1.1.0_
-
-- Adding auto complete function.
-
-_1.0.0_
-
-- First release.
+---
 
 ## Behind the Code
 
-I developed `SSHConn` with the help of ChatGPT 4o. The program builds upon my previous script [sshman](https://github.com/mwender/sshman).
+`SSHConn` was developed with the assistance of ChatGPT (initially GPT-4o), building on my earlier script [sshman](https://github.com/mwender/sshman).
 
-Being no expert in Bash, I was the project manager while ChatGPT wrote code according to my specifications. I set the direction and defined the features. ChatGPT worked as my junior developer, helping me implement the functionality and refine the code.
+I acted as the project manager—defining requirements, workflows, and UX—while ChatGPT handled implementation details. The result is a pragmatic tool that dramatically simplifies managing hundreds of SSH connections with minimal ceremony.
 
-The result is `SSHConn`, a tool that improves SSH connection management. It adds features like autocompletion and connection grouping, making it more efficient than my original `sshman` script. Given that I have 200+ SSH connections I need to keep track of, `SSHConn` greatly simplifies that process.
+---
 
 ## License
 
