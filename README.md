@@ -207,6 +207,9 @@ For the full changelog, see [CHANGELOG.md](CHANGELOG.md).
 
 ### Recent Changes
 
+**1.3.0**
+* zsh compatibility
+
 **1.2.1**
 
 * Portability fixes for macOS/Linux `sed`
