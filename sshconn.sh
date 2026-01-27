@@ -262,8 +262,14 @@ scp_file() {
     port=${port:-22}  # Default to 22 if not specified
   fi
 
-  # Prompt for file to copy with autocompletion
-  read -e -p "File to copy: " file_to_copy
+  # Prompt for file to copy.
+  # - In Bash, use `read -e` for readline editing.
+  # - Otherwise, fall back to plain `read`.
+  if [[ -n "${BASH_VERSION:-}" ]]; then
+    read -e -p "File to copy: " file_to_copy
+  else
+    read -p "File to copy: " file_to_copy
+  fi
 
   if [ ! -f "$file_to_copy" ]; then
     echo "ERROR: File does not exist."
