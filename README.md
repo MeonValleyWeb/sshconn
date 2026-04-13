@@ -28,15 +28,15 @@ You can install `sshconn` directly using `curl` or `wget`.
 ### Option 1: Install via Curl
 
 ```bash
-curl -L https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -o /usr/local/bin/sshconn
-chmod +x /usr/local/bin/sshconn
+sudo curl -L https://raw.githubusercontent.com/MeonValleyWeb/sshconn/main/sshconn.sh -o /usr/local/bin/sshconn
+sudo chmod +x /usr/local/bin/sshconn
 ```
 
 ### Option 2: Install via Wget
 
 ```bash
-wget https://raw.githubusercontent.com/mwender/sshconn/main/sshconn.sh -O /usr/local/bin/sshconn
-chmod +x /usr/local/bin/sshconn
+sudo wget https://raw.githubusercontent.com/MeonValleyWeb/sshconn/main/sshconn.sh -O /usr/local/bin/sshconn
+sudo chmod +x /usr/local/bin/sshconn
 ```
 
 Verify installation:
@@ -104,7 +104,7 @@ Autocompletion is optional but highly recommended. Setup differs slightly betwee
 #### Install the completion script
 
 ```bash
-curl -L https://raw.githubusercontent.com/mwender/sshconn/main/completions/bash/sshconn -o ~/.sshconn-completion.bash
+curl -L https://raw.githubusercontent.com/MeonValleyWeb/sshconn/main/completions/bash/sshconn -o ~/.sshconn-completion.bash
 ```
 
 #### Enable it
@@ -136,7 +136,7 @@ mkdir -p ~/.zsh/completions
 #### 2. Download the Zsh completion file
 
 ```bash
-curl -L https://raw.githubusercontent.com/mwender/sshconn/main/completions/zsh/_sshconn -o ~/.zsh/completions/_sshconn
+curl -L https://raw.githubusercontent.com/MeonValleyWeb/sshconn/main/completions/zsh/_sshconn -o ~/.zsh/completions/_sshconn
 ```
 
 #### 3. Enable completions in `~/.zshrc`
