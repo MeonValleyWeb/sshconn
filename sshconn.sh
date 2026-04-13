@@ -76,7 +76,9 @@ list_domains_boxed() {
         local ip=$(echo "$line_data" | cut -d',' -f3)
         local port=$(echo "$line_data" | cut -d',' -f4)
 
-        printf "│ %-$((num_col_width - 2))s │ %-$((domain_col_width - 2))s │ %-$((user_col_width - 2))s │ %-$((ip_col_width - 2))s │ %-$((port_col_width - 2))s │\n" "$((i + 1))" "${bold}${domain}${sgr0}" "$user" "$ip" "$port"
+        local padded_domain=$(printf "%-$((domain_col_width - 2))s" "$domain")
+
+        printf "│ %-$((num_col_width - 2))s │ ${bold}%s${sgr0} │ %-$((user_col_width - 2))s │ %-$((ip_col_width - 2))s │ %-$((port_col_width - 2))s │\n" "$((i + 1))" "$padded_domain" "$user" "$ip" "$port"
     done
 
     # --- Draw Footer ---
