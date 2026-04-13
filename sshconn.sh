@@ -76,10 +76,10 @@ list_domains_boxed() {
                 local domain=$(echo "$line_data" | cut -d',' -f1)
                 local user=$(echo "$line_data" | cut -d',' -f2)
                 local ip=$(echo "$line_data" | cut -d',' -f3)
-                
+
                 printf "│"
-                printf " %-2s %-30s " "$((index + 1))." "\033[1m$domain\033[0m"
-                printf "│"
+                printf " %-2s %-30s " "$((index + 1))." "$(tput bold)$domain$(tput sgr0)"
+                printf "│" 
                 printf "%s" "$(printf ' %.0s' $(seq 1 $padding))"
 
             else
