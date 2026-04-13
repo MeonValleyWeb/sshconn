@@ -39,71 +39,50 @@ list_domains() {
   awk -F',' '{print $1}' "$connections_file" | sort | nl -w1 -s". " | column -c $(tput cols)
 }
 
-# Function to render connections in a boxed layout
+# Function to render connections in a full-width table inspired by port-whisperer
 list_domains_boxed() {
     local connections=()
+    # Read connections and default the port to 22 if it's empty
     while IFS= read -r line; do
         connections+=("$line")
-    done < <(sort "$connections_file")
-
-    local term_width=$(tput cols)
-    local box_content_width=33 # Inner content width
-    local box_total_width=$((box_content_width + 2)) # Add 2 for vertical borders
-    local padding=2 # Space between boxes
-    local cell_width=$((box_total_width + padding))
-
-    local num_columns=$((term_width / cell_width))
-    if [ $num_columns -eq 0 ]; then num_columns=1; fi
+    done < <(awk -F, '{printf "%s,%s,%s,%s\n", $1, $2, $3, ($4=="" ? 22 : $4)}' "$connections_file" | sort)
 
     local num_connections=${#connections[@]}
-    local num_rows=$(( (num_connections + num_columns - 1) / num_columns ))
+    if [ $num_connections -eq 0 ]; then
+        echo "No connections found."
+        return
+    fi
 
-    for (( r=0; r<num_rows; r++ )); do
-        # Top border row
-        for (( c=0; c<num_columns; c++ )); do
-            local index=$((r * num_columns + c))
-            if [ $index -lt $num_connections ]; then
-                printf "┌%s┐" "$(printf '─%.0s' $(seq 1 $box_content_width))"
-                printf "%s" "$(printf ' ' $(seq 1 $padding))"
-            fi
-        done
-        printf "\n"
+    # --- Define Column Widths ---
+    local num_col_width=4
+    local domain_col_width=30
+    local user_col_width=20
+    local ip_col_width=20
+    local port_col_width=7
 
-        # Domain name row
-        for (( c=0; c<num_columns; c++ )); do
-            local index=$((r * num_columns + c))
-            if [ $index -lt $num_connections ]; then
-                local line_data=${connections[$index]}
-                local domain=$(echo "$line_data" | cut -d',' -f1)
-                printf "│ %-2s %-28s │" "$((index + 1))." "$(tput bold)$domain$(tput sgr0)"
-                printf "%s" "$(printf ' ' $(seq 1 $padding))"
-            fi
-        done
-        printf "\n"
+    local bold=$(tput bold)
+    local sgr0=$(tput sgr0)
 
-        # User@IP row
-        for (( c=0; c<num_columns; c++ )); do
-            local index=$((r * num_columns + c))
-            if [ $index -lt $num_connections ]; then
-                local line_data=${connections[$index]}
-                local user=$(echo "$line_data" | cut -d',' -f2)
-                local ip=$(echo "$line_data" | cut -d',' -f3)
-                printf "│ %-31s │" "  $user@$ip"
-                printf "%s" "$(printf ' ' $(seq 1 $padding))"
-            fi
-        done
-        printf "\n"
-        
-        # Bottom border row
-        for (( c=0; c<num_columns; c++ )); do
-            local index=$((r * num_columns + c))
-            if [ $index -lt $num_connections ]; then
-                printf "└%s┘" "$(printf '─%.0s' $(seq 1 $box_content_width))"
-                printf "%s" "$(printf ' ' $(seq 1 $padding))"
-            fi
-        done
-        printf "\n"
+    # --- Draw Header ---
+    printf "┌%s┬%s┬%s┬%s┬%s┐\n" "$(printf '─%.0s' $(seq 1 $num_col_width))" "$(printf '─%.0s' $(seq 1 $domain_col_width))" "$(printf '─%.0s' $(seq 1 $user_col_width))" "$(printf '─%.0s' $(seq 1 $ip_col_width))" "$(printf '─%.0s' $(seq 1 $port_col_width))"
+    printf "│ %-$((num_col_width - 2))s │ %-$((domain_col_width - 2))s │ %-$((user_col_width - 2))s │ %-$((ip_col_width - 2))s │ %-$((port_col_width - 2))s │\n" "#" "DOMAIN" "USER" "IP ADDRESS" "PORT"
+    printf "├%s┼%s┼%s┼%s┼%s┤\n" "$(printf '─%.0s' $(seq 1 $num_col_width))" "$(printf '─%.0s' $(seq 1 $domain_col_width))" "$(printf '─%.0s' $(seq 1 $user_col_width))" "$(printf '─%.0s' $(seq 1 $ip_col_width))" "$(printf '─%.0s' $(seq 1 $port_col_width))"
+
+    # --- Draw Rows ---
+    for i in "${!connections[@]}"; do
+        local line_data=${connections[$i]}
+        local domain=$(echo "$line_data" | cut -d',' -f1)
+        local user=$(echo "$line_data" | cut -d',' -f2)
+        local ip=$(echo "$line_data" | cut -d',' -f3)
+        local port=$(echo "$line_data" | cut -d',' -f4)
+
+        printf "│ %-$((num_col_width - 2))s │ %-$((domain_col_width - 2))s │ %-$((user_col_width - 2))s │ %-$((ip_col_width - 2))s │ %-$((port_col_width - 2))s │\n" "$((i + 1))" "${bold}${domain}${sgr0}" "$user" "$ip" "$port"
     done
+
+    # --- Draw Footer ---
+    printf "└%s┴%s┴%s┴%s┴%s┘\n" "$(printf '─%.0s' $(seq 1 $num_col_width))" "$(printf '─%.0s' $(seq 1 $domain_col_width))" "$(printf '─%.0s' $(seq 1 $user_col_width))" "$(printf '─%.0s' $(seq 1 $ip_col_width))" "$(printf '─%.0s' $(seq 1 $port_col_width))"
+
+    echo -e "\n$num_connections connection(s) · Select a number to connect"
 }
 
 # Function to validate port number
