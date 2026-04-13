@@ -39,6 +39,87 @@ list_domains() {
   awk -F',' '{print $1}' "$connections_file" | sort | nl -w1 -s". " | column -c $(tput cols)
 }
 
+# Function to render connections in a boxed layout
+list_domains_boxed() {
+    local connections=()
+    while IFS= read -r line; do
+        connections+=("$line")
+    done < <(sort "$connections_file")
+
+    local term_width=$(tput cols)
+    local box_width=35 # Max width for each box
+    local padding=2 # Space between boxes
+    local num_columns=$(( (term_width - padding) / (box_width + padding) ))
+    if [ $num_columns -eq 0 ]; then num_columns=1; fi
+
+    local num_connections=${#connections[@]}
+    local num_rows=$(( (num_connections + num_columns - 1) / num_columns ))
+
+    # Helper function to print a line of the box
+    print_line() {
+        printf " %-2s %-28s \n" "$1" "$2"
+    }
+
+    # Top border
+    for (( c=0; c<num_columns; c++ )); do
+        printf "┌%s┐" "$(printf '─%.0s' $(seq 1 $box_width))"
+        printf "%s" "$(printf ' %.0s' $(seq 1 $padding))"
+    done
+    printf "\n"
+
+    for (( i=0; i<num_rows; i++ )); do
+        # Content
+        for (( c=0; c<num_columns; c++ )); do
+            local index=$(( i + c * num_rows ))
+            if [ $index -lt $num_connections ]; then
+                local line_data=${connections[$index]}
+                local domain=$(echo "$line_data" | cut -d',' -f1)
+                local user=$(echo "$line_data" | cut -d',' -f2)
+                local ip=$(echo "$line_data" | cut -d',' -f3)
+                
+                printf "│"
+                printf " %-2s %-30s " "$((index + 1))." "\033[1m$domain\033[0m"
+                printf "│"
+                printf "%s" "$(printf ' %.0s' $(seq 1 $padding))"
+
+            else
+                printf "%s" "$(printf ' %.0s' $(seq 1 $((box_width + 2 + padding))))" # Empty space
+            fi
+        done
+        printf "\n"
+
+        # Content line 2 (user@ip)
+        for (( c=0; c<num_columns; c++ )); do
+            local index=$(( i + c * num_rows ))
+             if [ $index -lt $num_connections ]; then
+                local line_data=${connections[$index]}
+                local user=$(echo "$line_data" | cut -d',' -f2)
+                local ip=$(echo "$line_data" | cut -d',' -f3)
+
+                printf "│"
+                printf "    %-31s " "$user@$ip"
+                printf "│"
+                printf "%s" "$(printf ' %.0s' $(seq 1 $padding))"
+            else
+                printf "%s" "$(printf ' %.0s' $(seq 1 $((box_width + 2 + padding))))" # Empty space
+            fi
+        done
+        printf "\n"
+
+        # Bottom border
+        for (( c=0; c<num_columns; c++ )); do
+            local index=$(( i + c * num_rows ))
+            if [ $index -lt $num_connections ]; then
+                 printf "└%s┘" "$(printf '─%.0s' $(seq 1 $box_width))"
+                 printf "%s" "$(printf ' %.0s' $(seq 1 $padding))"
+            else
+                printf "%s" "$(printf ' %.0s' $(seq 1 $((box_width + 2 + padding))))" # Empty space
+            fi
+        done
+        printf "\n"
+    done
+}
+
 # Function to validate port number
 validate_port() {
   local port=$1
@@ -298,7 +379,7 @@ fi
 
 # Check if the script was run with the --list option
 if [ "$1" == "--list" ]; then
-  list_domains
+  list_domains_boxed
 
   read -p "Enter the number corresponding to the domain: " domain_number
 
